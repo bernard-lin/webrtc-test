@@ -120,11 +120,11 @@ const constraints = {
 
 console.log('Getting user media with constraints', constraints);
 
-if (location.hostname !== 'localhost') {
-  requestTurn(
-    'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
-  );
-}
+// if (location.hostname !== 'localhost') {
+//   requestTurn(
+//     'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
+//   );
+// }
 
 const maybeStart = () => {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
@@ -209,22 +209,22 @@ const onCreateSessionDescriptionError = (error) => {
   trace(`Failed to create session description: ${error.toString()}`);
 }
 
-const requestTurn = (turnURL) => {
-  let turnExists = false;
-  for (const i in pcConfig.iceServers) {
-    if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
-      turnExists = true;
-      turnReady = true;
-      break;
-    }
-  }
-  if (!turnExists) {
-    console.log('Getting TURN server from ', turnURL);
-    // No TURN server. Get one from computeengineondemand.appspot.com:
-    const xhr = new XMLHttpRequest();
-
-  }
-}
+// const requestTurn = (turnURL) => {
+//   let turnExists = false;
+//   for (const i in pcConfig.iceServers) {
+//     if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
+//       turnExists = true;
+//       turnReady = true;
+//       break;
+//     }
+//   }
+//   if (!turnExists) {
+//     console.log('Getting TURN server from ', turnURL);
+//     // No TURN server. Get one from computeengineondemand.appspot.com:
+//     const xhr = new XMLHttpRequest();
+//
+//   }
+// }
 
 
 
