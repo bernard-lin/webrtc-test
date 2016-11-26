@@ -93,6 +93,16 @@ socket.on('message', message => {
 const localVideo = document.querySelector('#localVideo');
 const remoteVideo = document.querySelector('#remoteVideo');
 
+let gotStream = (stream) => {
+  console.log('Adding local stream.');
+  localVideo.src = window.URL.createObjectURL(stream);
+  localStream = stream;
+  sendMessage('got user media');
+  if (isInitiator) {
+    maybeStart();
+  }
+}
+
 navigator.mediaDevices.getUserMedia({
   audio: true,
   video: true
@@ -102,15 +112,7 @@ navigator.mediaDevices.getUserMedia({
   alert(`getUserMedia() error: ${e.name}`);
 });
 
-const gotStream = (stream) => {
-  console.log('Adding local stream.');
-  localVideo.src = window.URL.createObjectURL(stream);
-  localStream = stream;
-  sendMessage('got user media');
-  if (isInitiator) {
-    maybeStart();
-  }
-}
+
 
 const constraints = {
   video: true
@@ -224,11 +226,7 @@ const requestTurn = (turnURL) => {
   }
 }
 
-const handleRemoteStreamAdded = (event) => {
-  console.log('Remote stream added.');
-  remoteVideo.src = window.URL.createObjectURL(event.stream);
-  remoteStream = event.stream;
-}
+
 
 const handleRemoteStreamRemoved = (event) => {
   console.log('Remote stream removed. Event: ', event);
