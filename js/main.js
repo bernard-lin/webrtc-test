@@ -115,8 +115,7 @@ function gotStream(stream) {
 }
 
 var constraints = {
-  video: true,
-  audio: true
+  video: true
 };
 
 console.log('Getting user media with constraints', constraints);
@@ -132,7 +131,6 @@ function maybeStart() {
   if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
     console.log('>>>>>> creating peer connection');
     createPeerConnection();
-    //  localStream.addTrack(localStream.getAudioTracks()[0]);
     pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
@@ -201,7 +199,7 @@ function doAnswer() {
 
 function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
-   sessionDescription.sdp = preferOpus(sessionDescription.sdp);
+  //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
   console.log('setLocalAndSendMessage sending message', sessionDescription);
   sendMessage(sessionDescription);
