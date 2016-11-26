@@ -6,14 +6,14 @@ let pc;
 let remoteStream;
 let turnReady;
 
-const pcConfig = {
+let pcConfig = {
   'iceServers': [{
     'url': 'stun:stun.l.google.com:19302'
   }]
 };
 
 // Set up audio and video regardless of what devices are present.
-const sdpConstraints = {
+let sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
     'OfferToReceiveVideo': true
@@ -22,11 +22,11 @@ const sdpConstraints = {
 
 /////////////////////////////////////////////
 
-const room = 'foo';
+let room = 'foo';
 // Could prompt for room name:
 // room = prompt('Enter room name:');
 
-const socket = io.connect();
+let socket = io.connect();
 
 if (room !== '') {
   socket.emit('create or join', room);
@@ -59,7 +59,7 @@ socket.on('log', array => {
 
 ////////////////////////////////////////////////
 
-const sendMessage = (message) => {
+let sendMessage = (message) => {
   console.log('Client sending message: ', message);
   socket.emit('message', message);
 }
@@ -78,7 +78,7 @@ socket.on('message', message => {
   } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
-    const candidate = new RTCIceCandidate({
+    let candidate = new RTCIceCandidate({
       sdpMLineIndex: message.label,
       candidate: message.candidate
     });
@@ -90,8 +90,8 @@ socket.on('message', message => {
 
 ////////////////////////////////////////////////////
 
-const localVideo = document.querySelector('#localVideo');
-const remoteVideo = document.querySelector('#remoteVideo');
+let localVideo = document.querySelector('#localVideo');
+let remoteVideo = document.querySelector('#remoteVideo');
 
 let gotStream = (stream) => {
   console.log('Adding local stream.');
@@ -114,7 +114,7 @@ navigator.mediaDevices.getUserMedia({
 
 
 
-const constraints = {
+let constraints = {
   video: true
 };
 
@@ -126,7 +126,7 @@ console.log('Getting user media with constraints', constraints);
 //   );
 // }
 
-const maybeStart = () => {
+let maybeStart = () => {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
   if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
     console.log('>>>>>> creating peer connection');
@@ -146,7 +146,7 @@ window.onbeforeunload = () => {
 
 /////////////////////////////////////////////////////////
 
-const createPeerConnection = () => {
+let createPeerConnection = () => {
   try {
     pc = new RTCPeerConnection(null);
     pc.onicecandidate = handleIceCandidate;
@@ -160,7 +160,7 @@ const createPeerConnection = () => {
   }
 }
 
- const handleIceCandidate = (event) => {
+ let handleIceCandidate = (event) => {
   console.log('icecandidate event: ', event);
   if (event.candidate) {
     sendMessage({
@@ -174,22 +174,22 @@ const createPeerConnection = () => {
   }
 }
 
-const handleRemoteStreamAdded = (event) => {
+let handleRemoteStreamAdded = (event) => {
   console.log('Remote stream added.');
   remoteVideo.src = window.URL.createObjectURL(event.stream);
   remoteStream = event.stream;
 }
 
-const handleCreateOfferError = (event) => {
+let handleCreateOfferError = (event) => {
   console.log('createOffer() error: ', event);
 }
 
-const doCall = () => {
+let doCall = () => {
   console.log('Sending offer to peer');
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
 
-const doAnswer = () => {
+let doAnswer = () => {
   console.log('Sending answer to peer.');
   pc.createAnswer().then(
     setLocalAndSendMessage,
@@ -197,7 +197,7 @@ const doAnswer = () => {
   );
 }
 
-const setLocalAndSendMessage = (sessionDescription) => {
+let setLocalAndSendMessage = (sessionDescription) => {
   // Set Opus as the preferred codec in SDP if Opus is present.
   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
@@ -205,13 +205,13 @@ const setLocalAndSendMessage = (sessionDescription) => {
   sendMessage(sessionDescription);
 }
 
-const onCreateSessionDescriptionError = (error) => {
+let onCreateSessionDescriptionError = (error) => {
   trace(`Failed to create session description: ${error.toString()}`);
 }
 
-// const requestTurn = (turnURL) => {
+// let requestTurn = (turnURL) => {
 //   let turnExists = false;
-//   for (const i in pcConfig.iceServers) {
+//   for (let i in pcConfig.iceServers) {
 //     if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
 //       turnExists = true;
 //       turnReady = true;
@@ -221,30 +221,30 @@ const onCreateSessionDescriptionError = (error) => {
 //   if (!turnExists) {
 //     console.log('Getting TURN server from ', turnURL);
 //     // No TURN server. Get one from computeengineondemand.appspot.com:
-//     const xhr = new XMLHttpRequest();
+//     let xhr = new XMLHttpRequest();
 //
 //   }
 // }
 
 
 
-const handleRemoteStreamRemoved = (event) => {
+let handleRemoteStreamRemoved = (event) => {
   console.log('Remote stream removed. Event: ', event);
 }
 
-const hangup = () => {
+let hangup = () => {
   console.log('Hanging up.');
   stop();
   sendMessage('bye');
 }
 
-const handleRemoteHangup = () => {
+let handleRemoteHangup = () => {
   console.log('Session terminated.');
   stop();
   isInitiator = false;
 }
 
-const stop = () => {
+let stop = () => {
   isStarted = false;
   // isAudioMuted = false;
   // isVideoMuted = false;
@@ -255,7 +255,7 @@ const stop = () => {
 ///////////////////////////////////////////
 
 // Set Opus as the default audio codec if it's present.
-const  preferOpus = (sdp) => {
+let  preferOpus = (sdp) => {
   let sdpLines = sdp.split('\r\n');
   let mLineIndex;
   // Search for m line.
@@ -272,7 +272,7 @@ const  preferOpus = (sdp) => {
   // If Opus is available, set it as the default in m line.
   for (i = 0; i < sdpLines.length; i++) {
     if (sdpLines[i].search('opus/48000') !== -1) {
-      const opusPayload = extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
+      let opusPayload = extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
       if (opusPayload) {
         sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex],
           opusPayload);
@@ -288,15 +288,15 @@ const  preferOpus = (sdp) => {
   return sdp;
 }
 
-const extractSdp = (sdpLine, pattern) => {
-  const result = sdpLine.match(pattern);
+let extractSdp = (sdpLine, pattern) => {
+  let result = sdpLine.match(pattern);
   return result && result.length === 2 ? result[1] : null;
 }
 
 // Set the selected codec to the first in m line.
-const setDefaultCodec = (mLine, payload) => {
-  const elements = mLine.split(' ');
-  const newLine = [];
+let setDefaultCodec = (mLine, payload) => {
+  let elements = mLine.split(' ');
+  let newLine = [];
   let index = 0;
   for (let i = 0; i < elements.length; i++) {
     if (index === 3) { // Format of media starts from the fourth.
@@ -310,13 +310,13 @@ const setDefaultCodec = (mLine, payload) => {
 }
 
 // Strip CN from sdp before CN constraints is ready.
-const removeCN = (sdpLines, mLineIndex) => {
-  const mLineElements = sdpLines[mLineIndex].split(' ');
+let removeCN = (sdpLines, mLineIndex) => {
+  let mLineElements = sdpLines[mLineIndex].split(' ');
   // Scan from end for the convenience of removing an item.
   for (let i = sdpLines.length - 1; i >= 0; i--) {
-    const payload = extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
+    let payload = extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
     if (payload) {
-      const cnPos = mLineElements.indexOf(payload);
+      let cnPos = mLineElements.indexOf(payload);
       if (cnPos !== -1) {
         // Remove CN payload from m line.
         mLineElements.splice(cnPos, 1);
