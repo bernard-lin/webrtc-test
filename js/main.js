@@ -132,7 +132,7 @@ function maybeStart() {
   if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
     console.log('>>>>>> creating peer connection');
     createPeerConnection();
-     localStream.addTrack(audioStream.getTracks()[0]);
+     localStream.addTrack(localStream.getAudioTracks()[0]);
     pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
