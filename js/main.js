@@ -102,7 +102,7 @@ navigator.mediaDevices.getUserMedia({
   alert(`getUserMedia() error: ${e.name}`);
 });
 
-function gotStream(stream) {
+const gotStream = (stream) => {
   console.log('Adding local stream.');
   localVideo.src = window.URL.createObjectURL(stream);
   localStream = stream;
@@ -124,7 +124,7 @@ if (location.hostname !== 'localhost') {
   );
 }
 
-function maybeStart() {
+const maybeStart = () => {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
   if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
     console.log('>>>>>> creating peer connection');
@@ -144,7 +144,7 @@ window.onbeforeunload = () => {
 
 /////////////////////////////////////////////////////////
 
-function createPeerConnection() {
+const createPeerConnection = () => {
   try {
     pc = new RTCPeerConnection(null);
     pc.onicecandidate = handleIceCandidate;
@@ -158,7 +158,7 @@ function createPeerConnection() {
   }
 }
 
-function handleIceCandidate(event) {
+ const handleIceCandidate = (event) => {
   console.log('icecandidate event: ', event);
   if (event.candidate) {
     sendMessage({
@@ -172,22 +172,22 @@ function handleIceCandidate(event) {
   }
 }
 
-function handleRemoteStreamAdded(event) {
+const handleRemoteStreamAdded = (event) => {
   console.log('Remote stream added.');
   remoteVideo.src = window.URL.createObjectURL(event.stream);
   remoteStream = event.stream;
 }
 
-function handleCreateOfferError(event) {
+const handleCreateOfferError = (event) => {
   console.log('createOffer() error: ', event);
 }
 
-function doCall() {
+const doCall = () => {
   console.log('Sending offer to peer');
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
 
-function doAnswer() {
+const doAnswer = () => {
   console.log('Sending answer to peer.');
   pc.createAnswer().then(
     setLocalAndSendMessage,
@@ -195,7 +195,7 @@ function doAnswer() {
   );
 }
 
-function setLocalAndSendMessage(sessionDescription) {
+const setLocalAndSendMessage = (sessionDescription) => {
   // Set Opus as the preferred codec in SDP if Opus is present.
   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
@@ -203,11 +203,11 @@ function setLocalAndSendMessage(sessionDescription) {
   sendMessage(sessionDescription);
 }
 
-function onCreateSessionDescriptionError(error) {
+const onCreateSessionDescriptionError = (error) => {
   trace(`Failed to create session description: ${error.toString()}`);
 }
 
-function requestTurn(turnURL) {
+const requestTurn = (turnURL) => {
   let turnExists = false;
   for (const i in pcConfig.iceServers) {
     if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
@@ -220,45 +220,33 @@ function requestTurn(turnURL) {
     console.log('Getting TURN server from ', turnURL);
     // No TURN server. Get one from computeengineondemand.appspot.com:
     const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        const turnServer = JSON.parse(xhr.responseText);
-        console.log('Got TURN server: ', turnServer);
-        pcConfig.iceServers.push({
-          'url': `turn:${turnServer.username}@${turnServer.turn}`,
-          'credential': turnServer.password
-        });
-        turnReady = true;
-      }
-    };
-    xhr.open('GET', turnURL, true);
-    xhr.send();
+
   }
 }
 
-function handleRemoteStreamAdded(event) {
+const handleRemoteStreamAdded = (event) => {
   console.log('Remote stream added.');
   remoteVideo.src = window.URL.createObjectURL(event.stream);
   remoteStream = event.stream;
 }
 
-function handleRemoteStreamRemoved(event) {
+const handleRemoteStreamRemoved = (event) => {
   console.log('Remote stream removed. Event: ', event);
 }
 
-function hangup() {
+const hangup = () => {
   console.log('Hanging up.');
   stop();
   sendMessage('bye');
 }
 
-function handleRemoteHangup() {
+const handleRemoteHangup = () => {
   console.log('Session terminated.');
   stop();
   isInitiator = false;
 }
 
-function stop() {
+const stop = () => {
   isStarted = false;
   // isAudioMuted = false;
   // isVideoMuted = false;
@@ -269,7 +257,7 @@ function stop() {
 ///////////////////////////////////////////
 
 // Set Opus as the default audio codec if it's present.
-function preferOpus(sdp) {
+const  preferOpus = (sdp) => {
   let sdpLines = sdp.split('\r\n');
   let mLineIndex;
   // Search for m line.
@@ -302,13 +290,13 @@ function preferOpus(sdp) {
   return sdp;
 }
 
-function extractSdp(sdpLine, pattern) {
+const extractSdp = (sdpLine, pattern) => {
   const result = sdpLine.match(pattern);
   return result && result.length === 2 ? result[1] : null;
 }
 
 // Set the selected codec to the first in m line.
-function setDefaultCodec(mLine, payload) {
+const setDefaultCodec = (mLine, payload) => {
   const elements = mLine.split(' ');
   const newLine = [];
   let index = 0;
@@ -324,7 +312,7 @@ function setDefaultCodec(mLine, payload) {
 }
 
 // Strip CN from sdp before CN constraints is ready.
-function removeCN(sdpLines, mLineIndex) {
+const removeCN = (sdpLines, mLineIndex) => {
   const mLineElements = sdpLines[mLineIndex].split(' ');
   // Scan from end for the convenience of removing an item.
   for (let i = sdpLines.length - 1; i >= 0; i--) {
