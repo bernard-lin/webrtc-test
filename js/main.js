@@ -1,21 +1,19 @@
-'use strict';
+let isChannelReady = false;
+let isInitiator = false;
+let isStarted = false;
+let localStream;
+let pc;
+let remoteStream;
+let turnReady;
 
-var isChannelReady = false;
-var isInitiator = false;
-var isStarted = false;
-var localStream;
-var pc;
-var remoteStream;
-var turnReady;
-
-var pcConfig = {
+const pcConfig = {
   'iceServers': [{
     'url': 'stun:stun.l.google.com:19302'
   }]
 };
 
 // Set up audio and video regardless of what devices are present.
-var sdpConstraints = {
+const sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
     'OfferToReceiveVideo': true
@@ -24,50 +22,50 @@ var sdpConstraints = {
 
 /////////////////////////////////////////////
 
-var room = 'foo';
+const room = 'foo';
 // Could prompt for room name:
 // room = prompt('Enter room name:');
 
-var socket = io.connect();
+const socket = io.connect();
 
 if (room !== '') {
   socket.emit('create or join', room);
   console.log('Attempted to create or  join room', room);
 }
 
-socket.on('created', function(room) {
-  console.log('Created room ' + room);
+socket.on('created', room => {
+  console.log(`Created room ${room}`);
   isInitiator = true;
 });
 
-socket.on('full', function(room) {
-  console.log('Room ' + room + ' is full');
+socket.on('full', room => {
+  console.log(`Room ${room} is full`);
 });
 
-socket.on('join', function (room){
-  console.log('Another peer made a request to join room ' + room);
-  console.log('This peer is the initiator of room ' + room + '!');
+socket.on('join', room => {
+  console.log(`Another peer made a request to join room ${room}`);
+  console.log(`This peer is the initiator of room ${room}!`);
   isChannelReady = true;
 });
 
-socket.on('joined', function(room) {
-  console.log('joined: ' + room);
+socket.on('joined', room => {
+  console.log(`joined: ${room}`);
   isChannelReady = true;
 });
 
-socket.on('log', function(array) {
-  console.log.apply(console, array);
+socket.on('log', array => {
+  console.log(...array);
 });
 
 ////////////////////////////////////////////////
 
-function sendMessage(message) {
+const sendMessage = (message) => {
   console.log('Client sending message: ', message);
   socket.emit('message', message);
 }
 
 // This client receives a message
-socket.on('message', function(message) {
+socket.on('message', message => {
   console.log('Client received message:', message);
   if (message === 'got user media') {
     maybeStart();
@@ -80,7 +78,7 @@ socket.on('message', function(message) {
   } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
-    var candidate = new RTCIceCandidate({
+    const candidate = new RTCIceCandidate({
       sdpMLineIndex: message.label,
       candidate: message.candidate
     });
@@ -92,16 +90,16 @@ socket.on('message', function(message) {
 
 ////////////////////////////////////////////////////
 
-var localVideo = document.querySelector('#localVideo');
-var remoteVideo = document.querySelector('#remoteVideo');
+const localVideo = document.querySelector('#localVideo');
+const remoteVideo = document.querySelector('#remoteVideo');
 
 navigator.mediaDevices.getUserMedia({
   audio: true,
   video: true
 })
 .then(gotStream)
-.catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
+.catch(e => {
+  alert(`getUserMedia() error: ${e.name}`);
 });
 
 function gotStream(stream) {
@@ -114,7 +112,7 @@ function gotStream(stream) {
   }
 }
 
-var constraints = {
+const constraints = {
   video: true
 };
 
@@ -140,7 +138,7 @@ function maybeStart() {
   }
 }
 
-window.onbeforeunload = function() {
+window.onbeforeunload = () => {
   sendMessage('bye');
 };
 
@@ -154,7 +152,7 @@ function createPeerConnection() {
     pc.onremovestream = handleRemoteStreamRemoved;
     console.log('Created RTCPeerConnnection');
   } catch (e) {
-    console.log('Failed to create PeerConnection, exception: ' + e.message);
+    console.log(`Failed to create PeerConnection, exception: ${e.message}`);
     alert('Cannot create RTCPeerConnection object.');
     return;
   }
@@ -206,12 +204,12 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function requestTurn(turnURL) {
-  var turnExists = false;
-  for (var i in pcConfig.iceServers) {
+  let turnExists = false;
+  for (const i in pcConfig.iceServers) {
     if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
       turnExists = true;
       turnReady = true;
@@ -221,13 +219,13 @@ function requestTurn(turnURL) {
   if (!turnExists) {
     console.log('Getting TURN server from ', turnURL);
     // No TURN server. Get one from computeengineondemand.appspot.com:
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = () => {
       if (xhr.readyState === 4 && xhr.status === 200) {
-        var turnServer = JSON.parse(xhr.responseText);
+        const turnServer = JSON.parse(xhr.responseText);
         console.log('Got TURN server: ', turnServer);
         pcConfig.iceServers.push({
-          'url': 'turn:' + turnServer.username + '@' + turnServer.turn,
+          'url': `turn:${turnServer.username}@${turnServer.turn}`,
           'credential': turnServer.password
         });
         turnReady = true;
@@ -272,8 +270,8 @@ function stop() {
 
 // Set Opus as the default audio codec if it's present.
 function preferOpus(sdp) {
-  var sdpLines = sdp.split('\r\n');
-  var mLineIndex;
+  let sdpLines = sdp.split('\r\n');
+  let mLineIndex;
   // Search for m line.
   for (var i = 0; i < sdpLines.length; i++) {
     if (sdpLines[i].search('m=audio') !== -1) {
@@ -288,7 +286,7 @@ function preferOpus(sdp) {
   // If Opus is available, set it as the default in m line.
   for (i = 0; i < sdpLines.length; i++) {
     if (sdpLines[i].search('opus/48000') !== -1) {
-      var opusPayload = extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
+      const opusPayload = extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
       if (opusPayload) {
         sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex],
           opusPayload);
@@ -305,16 +303,16 @@ function preferOpus(sdp) {
 }
 
 function extractSdp(sdpLine, pattern) {
-  var result = sdpLine.match(pattern);
+  const result = sdpLine.match(pattern);
   return result && result.length === 2 ? result[1] : null;
 }
 
 // Set the selected codec to the first in m line.
 function setDefaultCodec(mLine, payload) {
-  var elements = mLine.split(' ');
-  var newLine = [];
-  var index = 0;
-  for (var i = 0; i < elements.length; i++) {
+  const elements = mLine.split(' ');
+  const newLine = [];
+  let index = 0;
+  for (let i = 0; i < elements.length; i++) {
     if (index === 3) { // Format of media starts from the fourth.
       newLine[index++] = payload; // Put target payload to the first.
     }
@@ -327,12 +325,12 @@ function setDefaultCodec(mLine, payload) {
 
 // Strip CN from sdp before CN constraints is ready.
 function removeCN(sdpLines, mLineIndex) {
-  var mLineElements = sdpLines[mLineIndex].split(' ');
+  const mLineElements = sdpLines[mLineIndex].split(' ');
   // Scan from end for the convenience of removing an item.
-  for (var i = sdpLines.length - 1; i >= 0; i--) {
-    var payload = extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
+  for (let i = sdpLines.length - 1; i >= 0; i--) {
+    const payload = extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
     if (payload) {
-      var cnPos = mLineElements.indexOf(payload);
+      const cnPos = mLineElements.indexOf(payload);
       if (cnPos !== -1) {
         // Remove CN payload from m line.
         mLineElements.splice(cnPos, 1);
